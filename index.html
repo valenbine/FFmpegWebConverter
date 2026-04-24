@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="基于 FFmpeg.wasm 的在线音视频格式转换工具，纯前端处理，保护隐私" />
+    <meta name="keywords" content="视频转换，音频转换，格式转换，ffmpeg, webassembly, 在线工具" />
+    <title>FFmpeg Web Converter - 在线音视频格式转换工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      /* 强制应用深色背景，防止白屏 */
+      html, body {
+        background: #0a0a0f !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
