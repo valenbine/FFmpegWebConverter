@@ -66,12 +66,12 @@ export const AUDIO_BITRATES: Record<string, string> = {
   mp3: '192k',
   m4a: '192k',
   aac: '192k',
-  wav: '', // PCM 不需要比特率
+  wav: '',
   ogg: '192k',
-  flac: '', // 无损不需要比特率
+  flac: '',
   opus: '128k',
-  alac: '', // 无损不需要比特率
-  aiff: '', // PCM 不需要比特率
+  alac: '',
+  aiff: '',
   wma: '192k'
 }
 
@@ -101,7 +101,7 @@ export const getCommandLine = (inputFile: string, outputFile: string, format: st
       args.push(
         '-preset', quality,
         '-crf', preset.crf,
-        '-c:a', VIDEO_CODECS.aac || 'aac',
+        '-c:a', 'aac',
         '-b:a', '128k'
       )
     }
@@ -127,4 +127,13 @@ export const getCommandLine = (inputFile: string, outputFile: string, format: st
   
   args.push(outputFile)
   return args
+}
+
+// 获取支持的格式列表（用于验证）
+export const getSupportedFormats = () => {
+  return {
+    video: SUPPORTED_FORMATS.video.map(f => f.value),
+    audio: SUPPORTED_FORMATS.audio.map(f => f.value),
+    all: [...SUPPORTED_FORMATS.video.map(f => f.value), ...SUPPORTED_FORMATS.audio.map(f => f.value)]
+  }
 }
