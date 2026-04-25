@@ -4,6 +4,7 @@ import { toBlobURL, fetchFile } from '@ffmpeg/util'
 import FileUpload from './components/FileUpload'
 import ConverterOptions from './components/ConverterOptions'
 import Progress from './components/Progress'
+import { getCommandLine, AUDIO_CODECS, AUDIO_BITRATES } from './config/converter'
 import './App.css'
 
 function App() {
@@ -96,72 +97,27 @@ function App() {
 
       setMessage('正在转换...')
       
-      // 构建 FFmpeg 命令
-      const args = ['-i', inputFile]
-      
-      // 视频转音频
-      if (inputMediaType === 'video' && ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac'].includes(outputFormat)) {
-        if (outputFormat === 'mp3') {
-          args.push('-vn', '-c:a', 'libmp3lame', '-b:a', '192k')
-        } else if (outputFormat === 'm4a') {
-          args.push('-vn', '-c:a', 'aac', '-b:a', '192k')
-        } else if (outputFormat === 'aac') {
-          args.push('-vn', '-c:a', 'aac', '-b:a', '192k')
-        } else if (outputFormat === 'wav') {
-          args.push('-vn', '-c:a', 'pcm_s16le')
-        } else if (outputFormat === 'ogg') {
-          args.push('-vn', '-c:a', 'libvorbis', '-b:a', '192k')
-        } else if (outputFormat === 'flac') {
-          args.push('-vn', '-c:a', 'flac')
-        }
-      }
-      // 音频转音频
-      else if (inputMediaType === 'audio' && ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac'].includes(outputFormat)) {
-        if (outputFormat === 'mp3') {
-          args.push('-c:a', 'libmp3lame', '-b:a', '192k')
-        } else if (outputFormat === 'm4a' || outputFormat === 'aac') {
-          args.push('-c:a', 'aac', '-b:a', '192k')
-        } else if (outputFormat === 'wav') {
-          args.push('-c:a', 'pcm_s16le')
-        } else if (outputFormat === 'ogg') {
-          args.push('-c:a', 'libvorbis', '-b:a', '192k')
-        } else if (outputFormat === 'flac') {
-          args.push('-c:a', 'flac')
-        }
-      }
-      // 视频转视频
-      else if (outputFormat === 'gif') {
-        args.push('-vf', 'fps=10,scale=480:-1')
-      } else {
-        // 视频转码
-        const qualityMap: Record<string, string> = {
-          ultrafast: '28',
-          fast: '23',
-          medium: '18',
-          slow: '15'
-        }
-        args.push(
-          '-c:v', 'libx264',
-          '-preset', quality,
-          '-crf', qualityMap[quality] || '18',
-          '-c:a', 'aac',
-          '-b:a', '128k'
-        )
-      }
-      
-      args.push(outputFile)
+      // 使用配置文件中的命令行生成器
+      const args = getCommandLine(inputFile, outputFile, outputFormat, quality)
       
       await ffmpeg.exec(args)
 
       setMessage('正在生成输出文件...')
       const data = await ffmpeg.readFile(outputFile)
       
-      const mimeType = outputFormat === 'mp4' || outputFormat === 'webm' || outputFormat === 'mov' || outputFormat === 'avi' || outputFormat === 'mkv'
-        ? 'video/' + outputFormat
-        : outputFormat === 'mp3' || outputFormat === 'wav' || outputFormat === 'm4a' || outputFormat === 'ogg' || outputFormat === 'flac' || outputFormat === 'aac'
-          ? 'audio/' + outputFormat
-          : outputFormat === 'gif' ? 'image/gif' : 'application/octet-stream'
+      // 获取 MIME 类型
+      const getMimeType = (format: string): string => {
+        const videoFormats = ['mp4', 'webm', 'avi', 'mov', 'mkv', 'wmv', 'flv', '3gp', 'mpeg', 'ts', 'webp']
+        const audioFormats = ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac', 'opus', 'alac', 'aiff', 'wma']
+        const imageFormats = ['gif', 'webp']
+        
+        if (imageFormats.includes(format)) return 'image/' + format
+        if (videoFormats.includes(format)) return 'video/' + format
+        if (audioFormats.includes(format)) return 'audio/' + format
+        return 'application/octet-stream'
+      }
       
+      const mimeType = getMimeType(outputFormat)
       const blob = new Blob([data], { type: mimeType })
       const url = URL.createObjectURL(blob)
 
@@ -278,16 +234,16 @@ function App() {
           {outputURL && (
             <div className="output-section">
               <h3>✅ 转换成功!</h3>
-              {(mediaType === 'video' && outputFormat !== 'gif' && !['mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac'].includes(outputFormat)) && (
-                <video src={outputURL} controls />
-              )}
-              {['mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac'].includes(outputFormat) && (
+              {['gif', 'webp'].includes(outputFormat) ? (
+                <img src={outputURL} alt="Converted" className="gif-output" />
+              ) : (
                 <div className="audio-player-wrapper">
-                  <audio src={outputURL} controls />
+                  {['mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac', 'opus', 'alac', 'aiff', 'wma'].includes(outputFormat) ? (
+                    <audio src={outputURL} controls />
+                  ) : (
+                    <video src={outputURL} controls />
+                  )}
                 </div>
-              )}
-              {outputFormat === 'gif' && (
-                <img src={outputURL} alt="Converted GIF" className="gif-output" />
               )}
               <button className="download-btn" onClick={downloadFile}>
                 ⬇️ 下载文件
