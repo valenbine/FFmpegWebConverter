@@ -5,7 +5,7 @@ import FileUpload from './components/FileUpload'
 import ConverterOptions from './components/ConverterOptions'
 import Progress from './components/Progress'
 import ErrorDetails from './components/ErrorDetails'
-import { getCommandLine, getSupportedFormats } from './config/converter'
+import { getCommandLine } from './config/converter'
 import './App.css'
 
 function App() {
@@ -57,16 +57,27 @@ function App() {
     })
 
     try {
-      const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
+      const localBaseURL = `${window.location.origin}/ffmpeg-core`
+      const cdnBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
       
       addLog('正在下载 FFmpeg 核心文件（约 30MB）...')
       setLoadingProgress(30)
       
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
-      })
+      // 优先加载本地打包资源，若不存在再回退到 CDN。
+      try {
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${localBaseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${localBaseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+          workerURL: await toBlobURL(`${localBaseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+        })
+      } catch {
+        addLog('⚠️ 本地 FFmpeg core 不可用，回退到 CDN 加载')
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${cdnBaseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${cdnBaseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+          workerURL: await toBlobURL(`${cdnBaseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+        })
+      }
 
       setLoaded(true)
       setLoadingProgress(100)
@@ -189,7 +200,8 @@ function App() {
       const mimeType = getMimeType(outputFormat)
       addLog(`音频/视频 MIME 类型：${mimeType}`)
       
-      const blob = new Blob([data], { type: mimeType })
+      const outputBytes = typeof data === 'string' ? new TextEncoder().encode(data) : Uint8Array.from(data)
+      const blob = new Blob([outputBytes.buffer], { type: mimeType })
       const url = URL.createObjectURL(blob)
 
       setOutputURL(url)

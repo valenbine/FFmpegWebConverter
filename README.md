@@ -74,6 +74,36 @@ npm run build
 npm run preview
 ```
 
+## 🖥️ 封装 Windows 桌面版
+
+```bash
+# 先安装依赖
+npm install
+
+# 构建 Windows 安装包（NSIS）
+npm run build:desktop
+```
+
+生成产物目录：`release/`
+
+说明：
+- 桌面打包会先将 `@ffmpeg/core-mt` 复制到 `public/ffmpeg-core`，优先本地加载，支持离线使用。
+- 如果本地 core 不存在，应用会自动回退到 CDN 加载。
+
+### GitHub Actions 自动构建（Windows）
+
+- 工作流文件：`.github/workflows/windows-desktop-build.yml`
+- 触发方式：
+  - push 到 `main`
+  - 在 GitHub Actions 页面手动触发 `workflow_dispatch`
+- 构建完成后可在 Actions 的 Artifacts 下载安装包。
+
+### GitHub Release 自动上传安装包
+
+- 工作流文件：`.github/workflows/windows-release-publish.yml`
+- 触发方式：发布一个新的 GitHub Release（`published`）
+- 行为：自动构建 Windows 安装包并上传到该 Release 的 Assets。
+
 ## 🛠️ 技术栈
 
 - **框架**: React 19 + TypeScript
