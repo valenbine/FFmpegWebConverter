@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "prepare:ffmpeg-core": "node scripts/copy-ffmpeg-core.mjs",
-    "build:desktop": "npm run prepare:ffmpeg-core && npm run build && electron-builder --win",
+    "build:desktop": "npm run prepare:ffmpeg-core && npm run build && electron-builder --win --publish never",
     "electron:dev": "electron electron/main.cjs",
     "lint": "eslint .",
     "preview": "vite preview"
