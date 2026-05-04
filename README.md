@@ -104,6 +104,13 @@ npm run build:desktop
 - 触发方式：发布一个新的 GitHub Release（`published`）
 - 行为：自动构建 Windows 安装包并上传到该 Release 的 Assets。
 
+### 手动构建并上传到指定 Release
+
+- 工作流文件：`.github/workflows/windows-manual-release-upload.yml`
+- 触发方式：GitHub Actions 手动触发 `workflow_dispatch`
+- 必填参数：`tag`（例如 `v0.0.1`）
+- 行为：构建完成后把安装包上传到该 tag 对应的 Release Assets。
+
 ## 🛠️ 技术栈
 
 - **框架**: React 19 + TypeScript
