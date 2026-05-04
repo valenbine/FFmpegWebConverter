@@ -21,8 +21,11 @@ export default {
     target: 'esnext',
     rollupOptions: {
       output: {
-        manualChunks: {
-          ffmpeg: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
+        manualChunks(id: string) {
+          if (id.includes('@ffmpeg/ffmpeg') || id.includes('@ffmpeg/util')) {
+            return 'ffmpeg'
+          }
+          return undefined
         }
       }
     }

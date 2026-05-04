@@ -5,7 +5,7 @@ import FileUpload from './components/FileUpload'
 import ConverterOptions from './components/ConverterOptions'
 import Progress from './components/Progress'
 import ErrorDetails from './components/ErrorDetails'
-import { getCommandLine, getSupportedFormats } from './config/converter'
+import { getCommandLine } from './config/converter'
 import './App.css'
 
 function App() {
@@ -200,7 +200,8 @@ function App() {
       const mimeType = getMimeType(outputFormat)
       addLog(`音频/视频 MIME 类型：${mimeType}`)
       
-      const blob = new Blob([data], { type: mimeType })
+      const outputBytes = typeof data === 'string' ? new TextEncoder().encode(data) : Uint8Array.from(data)
+      const blob = new Blob([outputBytes.buffer], { type: mimeType })
       const url = URL.createObjectURL(blob)
 
       setOutputURL(url)
