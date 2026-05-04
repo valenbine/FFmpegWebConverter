@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "prepare:ffmpeg-core": "node scripts/copy-ffmpeg-core.mjs",
+    "build:desktop": "npm run prepare:ffmpeg-core && npm run build && electron-builder --win",
+    "electron:dev": "electron electron/main.cjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -27,6 +30,26 @@
     "globals": "^17.5.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.valenbine.ffmpegwebconverter",
+    "productName": "FFmpeg Web Converter",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
   }
 }
