@@ -119,6 +119,8 @@ export const getCommandLine = (inputFile: string, outputFile: string, format: st
     const codec = AUDIO_CODECS[format] || 'aac'
     const bitrate = AUDIO_BITRATES[format]
     
+    // Audio outputs should never carry a video stream.
+    args.push('-vn')
     args.push('-c:a', codec)
     if (bitrate) {
       args.push('-b:a', bitrate)
