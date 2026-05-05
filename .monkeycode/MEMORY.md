@@ -4,6 +4,14 @@
 
 ## 条目
 
+[提交描述避免提及已放弃方案]
+- Date: 2026-05-05
+- Context: 用户要求本次改动的描述不要再提及 Android 适配过程，就当未做过该方向
+- Category: 代码模式
+- Instructions:
+  - 提交信息、变更说明和后续描述应聚焦当前保留方案。
+  - 对于已放弃的技术路线，不在对外描述中展开说明，除非用户明确要求回顾历史。
+
 [桌面化产品命名与展示要求]
 - Date: 2026-05-05
 - Context: 用户要求调整桌面版命名、清理“Web/在线”字样并展示作者信息
@@ -38,17 +46,8 @@
 - Context: Agent 在执行“支持离线运行与桌面打包”时发现
 - Category: 依赖关系
 - Instructions:
-  - 构建前需执行 `npm run prepare:ffmpeg-core`，将 `@ffmpeg/core-mt` 复制到 `public/ffmpeg-core`。
-  - 应用加载 FFmpeg 时优先使用本地 `ffmpeg-core` 资源，缺失时再回退到 CDN。
-
-[Android 打包骨架]
-- Date: 2026-05-05
-- Context: Agent 在执行“新增 Android APK 打包支持”时发现
-- Category: 构建方法
-- Instructions:
-  - Android 方案使用 Capacitor，与 Electron Windows 打包流程相互独立。
-  - 常用命令：`npm run build:android:web`、`npm run android:add`、`npm run android:sync`、`npm run android:open`。
-  - APK/AAB 最终由 Android Studio 构建输出。
+  - 构建前需执行 `npm run prepare:ffmpeg-core`，将 `@ffmpeg/core-mt` 与 `@ffmpeg/core` 分别复制到 `public/ffmpeg-core-mt` 和 `public/ffmpeg-core-st`。
+  - 应用加载 FFmpeg 时优先使用本地 core 资源，缺失时再回退到 CDN。
 
 [音频转码质量逻辑]
 - Date: 2026-05-05

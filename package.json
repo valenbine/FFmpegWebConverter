@@ -15,16 +15,10 @@
     "prepare:ffmpeg-core": "node scripts/copy-ffmpeg-core.mjs",
     "build:desktop": "npm run prepare:ffmpeg-core && npm run build && electron-builder --win --publish never",
     "electron:dev": "electron electron/main.cjs",
-    "build:android:web": "npm run prepare:ffmpeg-core && npm run build",
-    "android:add": "npx cap add android",
-    "android:sync": "npx cap sync android",
-    "android:open": "npx cap open android",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor/android": "^6.2.0",
-    "@capacitor/core": "^6.2.0",
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/core-mt": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
@@ -33,7 +27,6 @@
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.2.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
