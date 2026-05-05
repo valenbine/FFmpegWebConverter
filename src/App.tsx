@@ -57,26 +57,52 @@ function App() {
     })
 
     try {
-      const localBaseURL = `${window.location.origin}/ffmpeg-core`
-      const cdnBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
-      
+      const supportsSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined'
+      const localSingleThreadBaseURL = `${window.location.origin}/ffmpeg-core-st`
+      const localMultiThreadBaseURL = `${window.location.origin}/ffmpeg-core-mt`
+      const cdnSingleThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd'
+      const cdnMultiThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
+
       addLog('正在下载 FFmpeg 核心文件（约 30MB）...')
       setLoadingProgress(30)
-      
-      // 优先加载本地打包资源，若不存在再回退到 CDN。
-      try {
+
+      const loadSingleThreadCore = async (baseURL: string) => {
         await ffmpeg.load({
-          coreURL: await toBlobURL(`${localBaseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${localBaseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-          workerURL: await toBlobURL(`${localBaseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         })
+      }
+
+      const loadMultiThreadCore = async (baseURL: string) => {
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+          workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+        })
+      }
+      
+      // 优先加载本地打包资源；不支持 SharedArrayBuffer 时自动降级到单线程核心。
+      try {
+        if (supportsSharedArrayBuffer) {
+          addLog('检测到 SharedArrayBuffer，优先加载多线程 FFmpeg core')
+          await loadMultiThreadCore(localMultiThreadBaseURL)
+        } else {
+          addLog('当前环境不支持 SharedArrayBuffer，切换到单线程 FFmpeg core')
+          await loadSingleThreadCore(localSingleThreadBaseURL)
+        }
       } catch {
         addLog('⚠️ 本地 FFmpeg core 不可用，回退到 CDN 加载')
-        await ffmpeg.load({
-          coreURL: await toBlobURL(`${cdnBaseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${cdnBaseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-          workerURL: await toBlobURL(`${cdnBaseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
-        })
+        if (supportsSharedArrayBuffer) {
+          await loadMultiThreadCore(cdnMultiThreadBaseURL)
+        } else {
+          await loadSingleThreadCore(cdnSingleThreadBaseURL)
+        }
+      }
+
+      if (supportsSharedArrayBuffer) {
+        addLog('✅ 已启用多线程 FFmpeg core')
+      } else {
+        addLog('✅ 已启用单线程 FFmpeg core')
       }
 
       setLoaded(true)
