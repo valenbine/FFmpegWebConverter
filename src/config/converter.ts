@@ -75,6 +75,21 @@ export const AUDIO_BITRATES: Record<string, string> = {
   wma: '192k'
 }
 
+const AUDIO_QUALITY_BITRATE_OVERRIDES: Record<string, Record<string, string>> = {
+  mp3: { ultrafast: '96k', fast: '128k', medium: '192k', slow: '256k' },
+  m4a: { ultrafast: '96k', fast: '128k', medium: '192k', slow: '256k' },
+  aac: { ultrafast: '96k', fast: '128k', medium: '192k', slow: '256k' },
+  ogg: { ultrafast: '96k', fast: '128k', medium: '192k', slow: '256k' },
+  opus: { ultrafast: '64k', fast: '96k', medium: '128k', slow: '160k' },
+  wma: { ultrafast: '96k', fast: '128k', medium: '192k', slow: '256k' }
+}
+
+const getAudioBitrate = (format: string, quality: string): string => {
+  const byQuality = AUDIO_QUALITY_BITRATE_OVERRIDES[format]
+  if (byQuality && byQuality[quality]) return byQuality[quality]
+  return AUDIO_BITRATES[format] || ''
+}
+
 export const getCommandLine = (inputFile: string, outputFile: string, format: string, quality: string): string[] => {
   const preset = QUALITY_PRESETS.find(p => p.value === quality) || QUALITY_PRESETS[1]
   const args: string[] = ['-i', inputFile]
@@ -117,7 +132,7 @@ export const getCommandLine = (inputFile: string, outputFile: string, format: st
   // 音频格式
   else if (['mp3', 'm4a', 'aac', 'wav', 'ogg', 'flac', 'opus', 'alac', 'aiff', 'wma'].includes(format)) {
     const codec = AUDIO_CODECS[format] || 'aac'
-    const bitrate = AUDIO_BITRATES[format]
+    const bitrate = getAudioBitrate(format, quality)
     
     // Audio outputs should never carry a video stream.
     args.push('-vn')
