@@ -68,12 +68,27 @@ function App() {
 
       const loadSingleThreadCore = async (baseURL: string) => {
         await ffmpeg.load({
+          coreURL: `${baseURL}/ffmpeg-core.js`,
+          wasmURL: `${baseURL}/ffmpeg-core.wasm`,
+        })
+      }
+
+      const loadMultiThreadCore = async (baseURL: string) => {
+        await ffmpeg.load({
+          coreURL: `${baseURL}/ffmpeg-core.js`,
+          wasmURL: `${baseURL}/ffmpeg-core.wasm`,
+          workerURL: `${baseURL}/ffmpeg-core.worker.js`,
+        })
+      }
+
+      const loadSingleThreadCoreFromCDN = async (baseURL: string) => {
+        await ffmpeg.load({
           coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
           wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         })
       }
 
-      const loadMultiThreadCore = async (baseURL: string) => {
+      const loadMultiThreadCoreFromCDN = async (baseURL: string) => {
         await ffmpeg.load({
           coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
           wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
@@ -93,9 +108,9 @@ function App() {
       } catch {
         addLog('⚠️ 本地 FFmpeg core 不可用，回退到 CDN 加载')
         if (supportsSharedArrayBuffer) {
-          await loadMultiThreadCore(cdnMultiThreadBaseURL)
+          await loadMultiThreadCoreFromCDN(cdnMultiThreadBaseURL)
         } else {
-          await loadSingleThreadCore(cdnSingleThreadBaseURL)
+          await loadSingleThreadCoreFromCDN(cdnSingleThreadBaseURL)
         }
       }
 
