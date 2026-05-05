@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
+import { Capacitor } from '@capacitor/core'
 import { toBlobURL, fetchFile } from '@ffmpeg/util'
 import FileUpload from './components/FileUpload'
 import ConverterOptions from './components/ConverterOptions'
@@ -58,15 +59,26 @@ function App() {
 
     try {
       const supportsSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined'
-      const localSingleThreadBaseURL = `${window.location.origin}/ffmpeg-core-st`
-      const localMultiThreadBaseURL = `${window.location.origin}/ffmpeg-core-mt`
+      const isNativePlatform = Capacitor.isNativePlatform()
+      const localSingleThreadBaseURL = isNativePlatform ? './ffmpeg-core-st' : `${window.location.origin}/ffmpeg-core-st`
+      const localMultiThreadBaseURL = isNativePlatform ? './ffmpeg-core-mt' : `${window.location.origin}/ffmpeg-core-mt`
       const cdnSingleThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd'
       const cdnMultiThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
 
       addLog('正在下载 FFmpeg 核心文件（约 30MB）...')
       setLoadingProgress(30)
+      addLog(`运行平台：${isNativePlatform ? `Capacitor/${Capacitor.getPlatform()}` : 'Web/Desktop'}`)
+
+      const probeLocalResource = async (url: string) => {
+        const response = await fetch(url, { method: 'GET' })
+        if (!response.ok) {
+          throw new Error(`资源不可访问：${url} (${response.status})`)
+        }
+      }
 
       const loadSingleThreadCore = async (baseURL: string) => {
+        await probeLocalResource(`${baseURL}/ffmpeg-core.js`)
+        await probeLocalResource(`${baseURL}/ffmpeg-core.wasm`)
         await ffmpeg.load({
           coreURL: `${baseURL}/ffmpeg-core.js`,
           wasmURL: `${baseURL}/ffmpeg-core.wasm`,
@@ -74,6 +86,9 @@ function App() {
       }
 
       const loadMultiThreadCore = async (baseURL: string) => {
+        await probeLocalResource(`${baseURL}/ffmpeg-core.js`)
+        await probeLocalResource(`${baseURL}/ffmpeg-core.wasm`)
+        await probeLocalResource(`${baseURL}/ffmpeg-core.worker.js`)
         await ffmpeg.load({
           coreURL: `${baseURL}/ffmpeg-core.js`,
           wasmURL: `${baseURL}/ffmpeg-core.wasm`,
@@ -99,14 +114,15 @@ function App() {
       // 优先加载本地打包资源；不支持 SharedArrayBuffer 时自动降级到单线程核心。
       try {
         if (supportsSharedArrayBuffer) {
-          addLog('检测到 SharedArrayBuffer，优先加载多线程 FFmpeg core')
+          addLog(`检测到 SharedArrayBuffer，优先加载多线程 FFmpeg core：${localMultiThreadBaseURL}`)
           await loadMultiThreadCore(localMultiThreadBaseURL)
         } else {
-          addLog('当前环境不支持 SharedArrayBuffer，切换到单线程 FFmpeg core')
+          addLog(`当前环境不支持 SharedArrayBuffer，切换到单线程 FFmpeg core：${localSingleThreadBaseURL}`)
           await loadSingleThreadCore(localSingleThreadBaseURL)
         }
-      } catch {
-        addLog('⚠️ 本地 FFmpeg core 不可用，回退到 CDN 加载')
+      } catch (localError: any) {
+        addLog(`⚠️ 本地 FFmpeg core 不可用：${localError?.message || localError}`)
+        addLog('⚠️ 回退到 CDN 加载')
         if (supportsSharedArrayBuffer) {
           await loadMultiThreadCoreFromCDN(cdnMultiThreadBaseURL)
         } else {
