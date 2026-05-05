@@ -80,8 +80,8 @@ function App() {
         await probeLocalResource(`${baseURL}/ffmpeg-core.js`)
         await probeLocalResource(`${baseURL}/ffmpeg-core.wasm`)
         await ffmpeg.load({
-          coreURL: `${baseURL}/ffmpeg-core.js`,
-          wasmURL: `${baseURL}/ffmpeg-core.wasm`,
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         })
       }
 
@@ -90,9 +90,9 @@ function App() {
         await probeLocalResource(`${baseURL}/ffmpeg-core.wasm`)
         await probeLocalResource(`${baseURL}/ffmpeg-core.worker.js`)
         await ffmpeg.load({
-          coreURL: `${baseURL}/ffmpeg-core.js`,
-          wasmURL: `${baseURL}/ffmpeg-core.wasm`,
-          workerURL: `${baseURL}/ffmpeg-core.worker.js`,
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+          workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
         })
       }
 
