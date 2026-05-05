@@ -382,6 +382,9 @@ function App() {
         <footer className="footer">
           <p>基于 <a href="https://github.com/ffmpegwasm/ffmpeg.wasm" target="_blank" rel="noopener noreferrer">FFmpeg.wasm</a> 构建</p>
           <p className="privacy-hint">所有处理都在本地浏览器完成，文件不会上传到服务器</p>
+          <p>作者：猫仙森MR CAT</p>
+          <p>邮箱：<a href="mailto:valenbine@163.com">valenbine@163.com</a></p>
+          <p>仓库：<a href="https://github.com/valenbine/FFmpegWebConverter" target="_blank" rel="noopener noreferrer">FFmpegWebConverter</a></p>
           <button onClick={clearLogs} className="clear-logs-btn">🧹 清空日志</button>
         </footer>
       </div>
