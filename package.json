@@ -3,6 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "author": "猫仙森MR CAT <valenbine@163.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/valenbine/FFmpegWebConverter"
+  },
+  "homepage": "https://github.com/valenbine/FFmpegWebConverter",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -38,7 +44,7 @@
   "main": "electron/main.cjs",
   "build": {
     "appId": "com.valenbine.ffmpegwebconverter",
-    "productName": "FFmpeg Web Converter",
+    "productName": "FFmpeg Converter",
     "directories": {
       "output": "release"
     },

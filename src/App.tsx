@@ -259,7 +259,7 @@ function App() {
     return (
       <div className="app loading">
         <div className="loading-container">
-          <h1>🎬 FFmpeg Web Converter</h1>
+          <h1>🎬 FFmpeg Converter</h1>
           <p>正在加载 FFmpeg 核心组件...</p>
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${loadingProgress}%` }} />
@@ -301,8 +301,8 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="header">
-          <h1>🎬 FFmpeg Web Converter</h1>
-          <p className="subtitle">基于 WebAssembly 的在线音视频格式转换工具</p>
+          <h1>🎬 FFmpeg Converter</h1>
+          <p className="subtitle">基于 WebAssembly 的本地音视频格式转换工具</p>
         </header>
 
         <main className="main-content">

@@ -1,6 +1,6 @@
-# FFmpeg Web Converter
+# FFmpeg Converter
 
-基于 FFmpeg.wasm 的在线音视频格式转换工具，纯前端处理，保护隐私。
+基于 FFmpeg.wasm 的本地音视频格式转换工具，纯本地处理，保护隐私。
 
 ## ✨ 功能特性
 
@@ -163,4 +163,8 @@ MIT License
 
 ---
 
-Made with ❤️ by [@valenbine](https://github.com/valenbine/FFmpegWebConverter)
+Author: 猫仙森MR CAT
+
+Email: valenbine@163.com
+
+GitHub: https://github.com/valenbine/FFmpegWebConverter
