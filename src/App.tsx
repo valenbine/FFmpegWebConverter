@@ -302,7 +302,7 @@ function App() {
       <div className="container">
         <header className="header">
           <h1>🎬 FFmpeg Converter</h1>
-          <p className="subtitle">基于 WebAssembly 的本地音视频格式转换工具</p>
+          <p className="subtitle">本地音视频格式转换工具（离线可用）</p>
         </header>
 
         <main className="main-content">

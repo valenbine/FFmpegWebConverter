@@ -8,7 +8,7 @@
 - 🎵 **音频转音频** - 支持 10 种音频格式互转
 - 📥 **视频转音频** - 从视频中提取音频轨道
 - 🎨 **现代化 UI** - 赛博朋克风格，响应式设计
-- 🔒 **隐私保护** - 所有处理都在浏览器本地完成，文件不会上传到服务器
+- 🔒 **隐私保护** - 所有处理都在本地完成，文件不会上传到服务器
 - 💻 **跨平台** - PC 和移动端完美适配
 - 📊 **实时进度** - 显示转换进度百分比
 
@@ -19,7 +19,7 @@
 | 格式 | 说明 | 图标 |
 |------|------|------|
 | **MP4** | 最常用的视频格式 | 🎬 |
-| **WebM** | Web 优化格式 | 🌐 |
+| **WebM** | 网页优化格式 | 🌐 |
 | **AVI** | Windows 通用格式 | 💻 |
 | **MOV** | Apple 设备格式 | 🍎 |
 | **MKV** | 高清视频容器 | 📦 |
@@ -90,18 +90,18 @@ npm run build:desktop
 - 桌面打包会先将 `@ffmpeg/core-mt` 复制到 `public/ffmpeg-core`，优先本地加载，支持离线使用。
 - 如果本地 core 不存在，应用会自动回退到 CDN 加载。
 
-### GitHub Actions 自动构建（Windows）
+### 自动构建（Windows）
 
 - 工作流文件：`.github/workflows/windows-desktop-build.yml`
 - 触发方式：
   - push 到 `main`
-  - 在 GitHub Actions 页面手动触发 `workflow_dispatch`
+  - 在仓库 Actions 页面手动触发 `workflow_dispatch`
 - 构建完成后可在 Actions 的 Artifacts 下载安装包。
 
-### GitHub Release 自动上传安装包
+### Release 自动上传安装包
 
 - 工作流文件：`.github/workflows/windows-release-publish.yml`
-- 触发方式：发布一个新的 GitHub Release（`published`）
+- 触发方式：发布一个新的 Release（`published`）
 - 行为：自动构建 Windows 安装包并上传到该 Release 的 Assets。
 
 ## Android APK 打包（Capacitor）
@@ -116,7 +116,7 @@ npm run build:android:web
 # 首次初始化 Android 工程（只需执行一次）
 npm run android:add
 
-# 同步 Web 资源到 Android
+# 同步前端资源到 Android
 npm run android:sync
 
 # 打开 Android Studio 进行 APK/AAB 构建
@@ -130,7 +130,7 @@ npm run android:open
 ### 手动构建并上传到指定 Release
 
 - 工作流文件：`.github/workflows/windows-manual-release-upload.yml`
-- 触发方式：GitHub Actions 手动触发 `workflow_dispatch`
+- 触发方式：仓库 Actions 手动触发 `workflow_dispatch`
 - 必填参数：`tag`（例如 `v0.0.1`）
 - 行为：构建完成后把安装包上传到该 tag 对应的 Release Assets。
 
@@ -186,8 +186,8 @@ MIT License
 
 ---
 
-Author: 猫仙森MR CAT
+作者：猫仙森MR CAT
 
-Email: valenbine@163.com
+邮箱：valenbine@163.com
 
-GitHub: https://github.com/valenbine/FFmpegWebConverter
+仓库：https://github.com/valenbine/FFmpegWebConverter
