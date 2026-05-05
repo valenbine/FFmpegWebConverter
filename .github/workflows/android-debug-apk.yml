@@ -1,0 +1,55 @@
+name: Build Android Debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android-debug-apk:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build:android:web
+
+      - name: Add Android platform if missing
+        run: |
+          if [ ! -d android ]; then
+            npm run android:add
+          fi
+
+      - name: Sync Android project
+        run: npm run android:sync
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+        working-directory: /workspace/FFmpegWebConverter/android
+
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: ffmpeg-converter-android-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

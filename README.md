@@ -134,6 +134,12 @@ npm run android:open
 - 必填参数：`tag`（例如 `v0.0.1`）
 - 行为：构建完成后把安装包上传到该 tag 对应的 Release Assets。
 
+### Android Debug APK 自动构建
+
+- 工作流文件：`.github/workflows/android-debug-apk.yml`
+- 触发方式：push 到 `main` 或在仓库 Actions 页面手动触发
+- 产物：Actions Artifacts 中的 `ffmpeg-converter-android-debug-apk`
+
 ## 🛠️ 技术栈
 
 - **框架**: React 19 + TypeScript
