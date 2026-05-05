@@ -34,7 +34,7 @@ jobs:
         run: npm run build:desktop
 
       - name: Upload files to GitHub Release by tag
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.tag }}
           files: |
