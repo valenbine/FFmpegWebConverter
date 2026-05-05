@@ -2,17 +2,16 @@
 
 基于 FFmpeg.wasm 的本地音视频格式转换工具，纯本地处理，保护隐私。
 
-## ✨ 功能特性
+## 功能特性
 
-- 🎬 **视频转视频** - 支持 12 种视频格式互转
-- 🎵 **音频转音频** - 支持 10 种音频格式互转
-- 📥 **视频转音频** - 从视频中提取音频轨道
-- 🎨 **现代化 UI** - 赛博朋克风格，响应式设计
-- 🔒 **隐私保护** - 所有处理都在本地完成，文件不会上传到服务器
-- 💻 **跨平台** - PC 和移动端完美适配
-- 📊 **实时进度** - 显示转换进度百分比
+- 视频转视频，支持 12 种视频格式互转
+- 音频转音频，支持 10 种音频格式互转
+- 视频转音频，可从视频中提取音频轨道
+- 现代化 UI，支持响应式布局
+- 隐私保护，所有处理都在本地完成，文件不会上传到服务器
+- 实时进度反馈，展示转换百分比和执行日志
 
-## 📋 支持的格式
+## 支持的格式
 
 ### 视频格式（12 种）
 
@@ -46,7 +45,7 @@
 | **AIFF** | 专业无损音频 | 🎚️ |
 | **WMA** | Windows 媒体音频 | 📻 |
 
-## 🚀 快速开始
+## 快速开始
 
 ### 安装依赖
 
@@ -74,7 +73,7 @@ npm run build
 npm run preview
 ```
 
-## 🖥️ 封装 Windows 桌面版
+## Windows 桌面版
 
 ```bash
 # 先安装依赖
@@ -87,7 +86,7 @@ npm run build:desktop
 生成产物目录：`release/`
 
 说明：
-- 桌面打包会先将 `@ffmpeg/core-mt` 复制到 `public/ffmpeg-core`，优先本地加载，支持离线使用。
+- 桌面打包会先将 `@ffmpeg/core-mt` 与 `@ffmpeg/core` 复制到 `public/ffmpeg-core-mt` 和 `public/ffmpeg-core-st`，优先本地加载，支持离线使用。
 - 如果本地 core 不存在，应用会自动回退到 CDN 加载。
 
 ### 自动构建（Windows）
@@ -104,29 +103,6 @@ npm run build:desktop
 - 触发方式：发布一个新的 Release（`published`）
 - 行为：自动构建 Windows 安装包并上传到该 Release 的 Assets。
 
-## Android APK 打包（Capacitor）
-
-```bash
-# 安装依赖
-npm install
-
-# 构建前端资源
-npm run build:android:web
-
-# 首次初始化 Android 工程（只需执行一次）
-npm run android:add
-
-# 同步前端资源到 Android
-npm run android:sync
-
-# 打开 Android Studio 进行 APK/AAB 构建
-npm run android:open
-```
-
-说明：
-- 这套 Android 流程与 Windows Electron 打包相互独立，不会影响 `build:desktop`。
-- APK/AAB 最终由 Android Studio 打包输出。
-
 ### 手动构建并上传到指定 Release
 
 - 工作流文件：`.github/workflows/windows-manual-release-upload.yml`
@@ -134,13 +110,7 @@ npm run android:open
 - 必填参数：`tag`（例如 `v0.0.1`）
 - 行为：构建完成后把安装包上传到该 tag 对应的 Release Assets。
 
-### Android Debug APK 自动构建
-
-- 工作流文件：`.github/workflows/android-debug-apk.yml`
-- 触发方式：push 到 `main` 或在仓库 Actions 页面手动触发
-- 产物：Actions Artifacts 中的 `ffmpeg-converter-android-debug-apk`
-
-## 🛠️ 技术栈
+## 技术栈
 
 - **框架**: React 19 + TypeScript
 - **构建工具**: Vite 8
@@ -148,7 +118,7 @@ npm run android:open
 - **样式**: 原生 CSS (赛博朋克风格)
 - **UI 设计**: 玻璃态 + 霓虹光效
 
-## 📦 依赖
+## 依赖
 
 ```json
 {
@@ -159,7 +129,7 @@ npm run android:open
 }
 ```
 
-## 🌐 浏览器支持
+## 浏览器支持
 
 需要支持 **WebAssembly** 和 **SharedArrayBuffer** 的现代浏览器：
 
@@ -168,13 +138,13 @@ npm run android:open
 - Safari 14+
 - Edge 92+
 
-## ⚠️ 注意事项
+## 注意事项
 
 1. **首次加载**：需要下载约 30MB 的 FFmpeg 核心文件
 2. **内存限制**：大文件转换受浏览器内存限制
 3. **性能**：转换速度取决于设备性能
 
-## 🎯 使用场景
+## 使用场景
 
 1. **视频格式转换** - 下载的视频无法播放？转换成通用格式！
 2. **音频提取** - 从视频中提取背景音乐制作铃声
@@ -182,11 +152,11 @@ npm run android:open
 4. **GIF/WebP 制作** - 视频片段转动态图片
 5. **老视频转换** - FLV/3GP 老格式转 MP4
 
-## 📄 许可证
+## 许可证
 
 MIT License
 
-## 🙏 致谢
+## 致谢
 
 基于 [FFmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) 构建
 

@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+public/ffmpeg-core-mt
+public/ffmpeg-core-st
 
 # Editor directories and files
 .vscode/*

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { Capacitor } from '@capacitor/core'
 import { toBlobURL, fetchFile } from '@ffmpeg/util'
 import FileUpload from './components/FileUpload'
 import ConverterOptions from './components/ConverterOptions'
@@ -59,15 +58,14 @@ function App() {
 
     try {
       const supportsSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined'
-      const isNativePlatform = Capacitor.isNativePlatform()
-      const localSingleThreadBaseURL = isNativePlatform ? './ffmpeg-core-st' : `${window.location.origin}/ffmpeg-core-st`
-      const localMultiThreadBaseURL = isNativePlatform ? './ffmpeg-core-mt' : `${window.location.origin}/ffmpeg-core-mt`
+      const localSingleThreadBaseURL = `${window.location.origin}/ffmpeg-core-st`
+      const localMultiThreadBaseURL = `${window.location.origin}/ffmpeg-core-mt`
       const cdnSingleThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd'
       const cdnMultiThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
 
       addLog('正在下载 FFmpeg 核心文件（约 30MB）...')
       setLoadingProgress(30)
-      addLog(`运行平台：${isNativePlatform ? `Capacitor/${Capacitor.getPlatform()}` : 'Web/Desktop'}`)
+      addLog('运行平台：Web/Desktop')
 
       const probeLocalResource = async (url: string) => {
         const response = await fetch(url, { method: 'GET' })
@@ -204,6 +202,7 @@ function App() {
       addLog(`输出文件：${outputFile}`)
       addLog(`目标格式：${outputFormat.toUpperCase()}`)
       addLog(`质量预设：${quality}`)
+      addLog('执行平台：desktop')
       addLog('══════════════════════════════════════')
 
       setMessage('正在写入文件...')
@@ -438,7 +437,7 @@ function App() {
 
         <footer className="footer">
           <p>基于 <a href="https://github.com/ffmpegwasm/ffmpeg.wasm" target="_blank" rel="noopener noreferrer">FFmpeg.wasm</a> 构建</p>
-          <p className="privacy-hint">所有处理都在本地浏览器完成，文件不会上传到服务器</p>
+          <p className="privacy-hint">所有处理都在本地完成，文件不会上传到服务器</p>
           <p>作者：猫仙森MR CAT</p>
           <p>邮箱：<a href="mailto:valenbine@163.com">valenbine@163.com</a></p>
           <p>仓库：<a href="https://github.com/valenbine/FFmpegWebConverter" target="_blank" rel="noopener noreferrer">FFmpegWebConverter</a></p>
