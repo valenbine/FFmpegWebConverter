@@ -104,6 +104,29 @@ npm run build:desktop
 - 触发方式：发布一个新的 GitHub Release（`published`）
 - 行为：自动构建 Windows 安装包并上传到该 Release 的 Assets。
 
+## Android APK 打包（Capacitor）
+
+```bash
+# 安装依赖
+npm install
+
+# 构建前端资源
+npm run build:android:web
+
+# 首次初始化 Android 工程（只需执行一次）
+npm run android:add
+
+# 同步 Web 资源到 Android
+npm run android:sync
+
+# 打开 Android Studio 进行 APK/AAB 构建
+npm run android:open
+```
+
+说明：
+- 这套 Android 流程与 Windows Electron 打包相互独立，不会影响 `build:desktop`。
+- APK/AAB 最终由 Android Studio 打包输出。
+
 ### 手动构建并上传到指定 Release
 
 - 工作流文件：`.github/workflows/windows-manual-release-upload.yml`
