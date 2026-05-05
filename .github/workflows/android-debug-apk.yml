@@ -45,7 +45,7 @@ jobs:
 
       - name: Build debug APK
         run: ./gradlew assembleDebug
-        working-directory: /workspace/FFmpegWebConverter/android
+        working-directory: ./android
 
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v5
