@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { toBlobURL, fetchFile } from '@ffmpeg/util'
 import FileUpload from './components/FileUpload'
@@ -151,6 +151,16 @@ function App() {
     }
   }, [loadCoreFromBaseURL, loaded, loading])
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadFFmpeg()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [loadFFmpeg])
+
   const handleFileSelect = (file: File) => {
     setSelectedFile(file)
     setError('')
@@ -178,9 +188,6 @@ function App() {
       addLog('⚠️ 未知文件类型，尝试按视频处理')
     }
 
-    if (!loaded && !loading) {
-      void loadFFmpeg()
-    }
   }
 
   const convertVideo = async () => {
