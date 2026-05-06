@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, shell } = require('electron')
 const http = require('http')
 const fs = require('fs')
 const path = require('path')
@@ -72,6 +72,22 @@ async function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true
+    }
+  })
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('mailto:')) {
+      shell.openExternal(url)
+      return { action: 'deny' }
+    }
+
+    return { action: 'allow' }
+  })
+
+  win.webContents.on('will-navigate', (event, url) => {
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('mailto:')) {
+      event.preventDefault()
+      shell.openExternal(url)
     }
   })
 
