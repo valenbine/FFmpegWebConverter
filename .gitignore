@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+release
 *.local
 public/ffmpeg-core-mt
 public/ffmpeg-core-st
