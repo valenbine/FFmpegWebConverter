@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { toBlobURL, fetchFile } from '@ffmpeg/util'
 import FileUpload from './components/FileUpload'
@@ -7,6 +7,20 @@ import Progress from './components/Progress'
 import ErrorDetails from './components/ErrorDetails'
 import { getCommandLine } from './config/converter'
 import './App.css'
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.message
+  }
+  return String(error)
+}
+
+const getErrorDetails = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.stack?.toString() || error.message
+  }
+  return JSON.stringify(error, null, 2)
+}
 
 function App() {
   const [loaded, setLoaded] = useState(false)
@@ -32,11 +46,7 @@ function App() {
     console.log('[FFmpeg-Converter]', log)
   }
 
-  useEffect(() => {
-    loadFFmpeg()
-  }, [])
-
-  const loadFFmpeg = async () => {
+  const loadFFmpeg = useCallback(async () => {
     setLoading(true)
     const ffmpeg = ffmpegRef.current
 
@@ -118,8 +128,8 @@ function App() {
           addLog(`当前环境不支持 SharedArrayBuffer，切换到单线程 FFmpeg core：${localSingleThreadBaseURL}`)
           await loadSingleThreadCore(localSingleThreadBaseURL)
         }
-      } catch (localError: any) {
-        addLog(`⚠️ 本地 FFmpeg core 不可用：${localError?.message || localError}`)
+      } catch (localError: unknown) {
+        addLog(`⚠️ 本地 FFmpeg core 不可用：${getErrorMessage(localError)}`)
         addLog('⚠️ 回退到 CDN 加载')
         if (supportsSharedArrayBuffer) {
           await loadMultiThreadCoreFromCDN(cdnMultiThreadBaseURL)
@@ -137,16 +147,26 @@ function App() {
       setLoaded(true)
       setLoadingProgress(100)
       addLog('✅ FFmpeg 核心加载成功！')
-    } catch (error: any) {
-      const errorMsg = `加载 FFmpeg 失败：${error.message}`
+    } catch (error: unknown) {
+      const errorMsg = `加载 FFmpeg 失败：${getErrorMessage(error)}`
       addLog(`❌ ${errorMsg}`)
       setError(errorMsg)
-      setErrorDetails(error?.stack?.toString() || JSON.stringify(error, null, 2))
+      setErrorDetails(getErrorDetails(error))
       console.error('FFmpeg load error:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadFFmpeg()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [loadFFmpeg])
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file)
@@ -225,8 +245,8 @@ function App() {
         addLog('▶️ 开始执行 FFmpeg 转换...')
         await ffmpeg.exec(args)
         addLog('✅ FFmpeg 转换执行成功')
-      } catch (execError: any) {
-        addLog(`❌ FFmpeg 执行错误：${execError.message || '未知错误'}`)
+      } catch (execError: unknown) {
+        addLog(`❌ FFmpeg 执行错误：${getErrorMessage(execError) || '未知错误'}`)
         throw execError
       }
 
@@ -263,7 +283,7 @@ function App() {
       setOutputURL(url)
       setMessage('✅ 转换完成!')
       addLog('🎉 转换成功！')
-      addLog(`输出 URL：${URL.createObjectURL(blob).substring(0, 100)}...`)
+      addLog(`输出 URL：${url.substring(0, 100)}...`)
       
       // 清理临时文件
       try {
@@ -274,17 +294,17 @@ function App() {
       } catch (cleanupError) {
         addLog(`⚠️ 清理临时文件失败：${cleanupError}`)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Conversion error:', error)
-      const errorMessage = error?.message || error?.toString() || '未知错误'
-      const errorStack = error?.stack?.toString() || ''
+      const errorMessage = getErrorMessage(error) || '未知错误'
+      const errorStack = getErrorDetails(error)
       
       const fullError = `转换失败：${errorMessage}`
       addLog(`❌ ${fullError}`)
-      addLog(`技术详情：${errorStack || JSON.stringify(error, null, 2)}`)
+      addLog(`技术详情：${errorStack}`)
       
       setError(fullError)
-      setErrorDetails(errorStack || JSON.stringify(error, null, 2))
+      setErrorDetails(errorStack)
       setMessage('转换失败')
     } finally {
       setIsConverting(false)
