@@ -4,6 +4,14 @@
 
 ## 条目
 
+[性能优化需保持 Windows 端可用]
+- Date: 2026-05-06
+- Context: 用户要求优化 FFmpeg 加载性能，但不能影响 Windows 端使用，并指定使用工作区 favicon 作为应用图标
+- Category: 代码模式
+- Instructions:
+  - 性能优化应优先采用不改变桌面端功能边界的最小改动。
+  - 调整图标时优先使用用户提供的 `/workspace/favicon.ico`。
+
 [提交描述避免提及已放弃方案]
 - Date: 2026-05-05
 - Context: 用户要求本次改动的描述不要再提及 Android 适配过程，就当未做过该方向
