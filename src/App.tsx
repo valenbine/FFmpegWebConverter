@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { toBlobURL, fetchFile } from '@ffmpeg/util'
 import FileUpload from './components/FileUpload'
@@ -7,6 +7,19 @@ import Progress from './components/Progress'
 import ErrorDetails from './components/ErrorDetails'
 import { getCommandLine } from './config/converter'
 import './App.css'
+
+const LOCAL_SINGLE_THREAD_BASE_URL = `${window.location.origin}/ffmpeg-core-st`
+const LOCAL_MULTI_THREAD_BASE_URL = `${window.location.origin}/ffmpeg-core-mt`
+const CDN_SINGLE_THREAD_BASE_URL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd'
+const CDN_MULTI_THREAD_BASE_URL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
+
+const isSameOriginURL = (url: string) => {
+  try {
+    return new URL(url, window.location.href).origin === window.location.origin
+  } catch {
+    return false
+  }
+}
 
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) {
@@ -46,7 +59,33 @@ function App() {
     console.log('[FFmpeg-Converter]', log)
   }
 
+  const loadCoreFromBaseURL = useCallback(async (ffmpeg: FFmpeg, baseURL: string, useMultiThread: boolean) => {
+    const coreURL = `${baseURL}/ffmpeg-core.js`
+    const wasmURL = `${baseURL}/ffmpeg-core.wasm`
+
+    if (isSameOriginURL(baseURL)) {
+      await ffmpeg.load({
+        coreURL,
+        wasmURL,
+        ...(useMultiThread ? { workerURL: `${baseURL}/ffmpeg-core.worker.js` } : {}),
+      })
+      return
+    }
+
+    await ffmpeg.load({
+      coreURL: await toBlobURL(coreURL, 'text/javascript'),
+      wasmURL: await toBlobURL(wasmURL, 'application/wasm'),
+      ...(useMultiThread
+        ? { workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript') }
+        : {}),
+    })
+  }, [])
+
   const loadFFmpeg = useCallback(async () => {
+    if (loaded || loading) {
+      return
+    }
+
     setLoading(true)
     const ffmpeg = ffmpegRef.current
 
@@ -68,84 +107,38 @@ function App() {
 
     try {
       const supportsSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined'
-      const localSingleThreadBaseURL = `${window.location.origin}/ffmpeg-core-st`
-      const localMultiThreadBaseURL = `${window.location.origin}/ffmpeg-core-mt`
-      const cdnSingleThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd'
-      const cdnMultiThreadBaseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm'
+      const preferMultiThread = supportsSharedArrayBuffer
+      const preferredBaseURL = preferMultiThread ? LOCAL_MULTI_THREAD_BASE_URL : LOCAL_SINGLE_THREAD_BASE_URL
+      const fallbackBaseURL = preferMultiThread ? CDN_MULTI_THREAD_BASE_URL : CDN_SINGLE_THREAD_BASE_URL
 
       addLog('正在下载 FFmpeg 核心文件（约 30MB）...')
-      setLoadingProgress(30)
+      setLoadingProgress(20)
       addLog('运行平台：Web/Desktop')
 
-      const probeLocalResource = async (url: string) => {
-        const response = await fetch(url, { method: 'GET' })
-        if (!response.ok) {
-          throw new Error(`资源不可访问：${url} (${response.status})`)
-        }
-      }
-
-      const loadSingleThreadCore = async (baseURL: string) => {
-        await probeLocalResource(`${baseURL}/ffmpeg-core.js`)
-        await probeLocalResource(`${baseURL}/ffmpeg-core.wasm`)
-        await ffmpeg.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        })
-      }
-
-      const loadMultiThreadCore = async (baseURL: string) => {
-        await probeLocalResource(`${baseURL}/ffmpeg-core.js`)
-        await probeLocalResource(`${baseURL}/ffmpeg-core.wasm`)
-        await probeLocalResource(`${baseURL}/ffmpeg-core.worker.js`)
-        await ffmpeg.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-          workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
-        })
-      }
-
-      const loadSingleThreadCoreFromCDN = async (baseURL: string) => {
-        await ffmpeg.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-        })
-      }
-
-      const loadMultiThreadCoreFromCDN = async (baseURL: string) => {
-        await ffmpeg.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-          workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
-        })
-      }
-      
-      // 优先加载本地打包资源；不支持 SharedArrayBuffer 时自动降级到单线程核心。
+      // 优先加载本地打包资源；CDN 回退时再转为 blob URL，避免本地资源重复下载。
       try {
-        if (supportsSharedArrayBuffer) {
-          addLog(`检测到 SharedArrayBuffer，优先加载多线程 FFmpeg core：${localMultiThreadBaseURL}`)
-          await loadMultiThreadCore(localMultiThreadBaseURL)
+        if (preferMultiThread) {
+          addLog(`检测到 SharedArrayBuffer，优先加载多线程 FFmpeg core：${preferredBaseURL}`)
         } else {
-          addLog(`当前环境不支持 SharedArrayBuffer，切换到单线程 FFmpeg core：${localSingleThreadBaseURL}`)
-          await loadSingleThreadCore(localSingleThreadBaseURL)
+          addLog(`当前环境不支持 SharedArrayBuffer，切换到单线程 FFmpeg core：${preferredBaseURL}`)
         }
+
+        await loadCoreFromBaseURL(ffmpeg, preferredBaseURL, preferMultiThread)
       } catch (localError: unknown) {
         addLog(`⚠️ 本地 FFmpeg core 不可用：${getErrorMessage(localError)}`)
         addLog('⚠️ 回退到 CDN 加载')
-        if (supportsSharedArrayBuffer) {
-          await loadMultiThreadCoreFromCDN(cdnMultiThreadBaseURL)
-        } else {
-          await loadSingleThreadCoreFromCDN(cdnSingleThreadBaseURL)
-        }
+        await loadCoreFromBaseURL(ffmpeg, fallbackBaseURL, preferMultiThread)
       }
 
-      if (supportsSharedArrayBuffer) {
+      setLoadingProgress(100)
+
+      if (preferMultiThread) {
         addLog('✅ 已启用多线程 FFmpeg core')
       } else {
         addLog('✅ 已启用单线程 FFmpeg core')
       }
 
       setLoaded(true)
-      setLoadingProgress(100)
       addLog('✅ FFmpeg 核心加载成功！')
     } catch (error: unknown) {
       const errorMsg = `加载 FFmpeg 失败：${getErrorMessage(error)}`
@@ -156,17 +149,7 @@ function App() {
     } finally {
       setLoading(false)
     }
-  }, [])
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void loadFFmpeg()
-    }, 0)
-
-    return () => {
-      window.clearTimeout(timer)
-    }
-  }, [loadFFmpeg])
+  }, [loadCoreFromBaseURL, loaded, loading])
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file)
@@ -194,14 +177,26 @@ function App() {
     } else {
       addLog('⚠️ 未知文件类型，尝试按视频处理')
     }
+
+    if (!loaded && !loading) {
+      void loadFFmpeg()
+    }
   }
 
   const convertVideo = async () => {
-    if (!selectedFile || !loaded) {
+    if (!selectedFile) {
       const msg = '请先选择要转换的文件'
       addLog(`❌ ${msg}`)
       setError(msg)
       return
+    }
+
+    if (!loaded) {
+      setMessage('正在加载 FFmpeg 核心...')
+      await loadFFmpeg()
+      if (!ffmpegRef.current.loaded) {
+        return
+      }
     }
 
     setIsConverting(true)
